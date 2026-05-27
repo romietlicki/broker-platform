@@ -1,0 +1,43 @@
+services:
+  backend:
+    build: ../broker-platform-backend
+    container_name: broker-platform-backend
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/broker_platform
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Rd@miet9
+      MAIL_HOST:      smtp.gmail.com
+      MAIL_PORT:      587
+      MAIL_USERNAME:  rodrigo.mietlicki@gmail.com
+      MAIL_PASSWORD:  jqqzqquawprvbwom
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    build: ../broker-platform-frontend
+    container_name: broker-platform-frontend
+    environment:
+      # URL interna para o backend dentro da rede Docker
+      API_URL: http://backend:8080
+    ports:
+      - "4200:80"
+
+  db:
+    image: mysql:8
+    container_name: broker-platform-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Rd@miet9
+      MYSQL_DATABASE: broker_platform
+    ports:
+      - "3307:3306"
+    volumes:
+      - ../broker-platform-backend/src/main/resources/db:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pRd@miet9"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
